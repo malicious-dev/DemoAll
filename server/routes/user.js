@@ -128,4 +128,31 @@ return res.status(200).json({message: "User updated successfully"});
   })
 })
 
+router.post('/changePassword', (req, res) => {
+  const user = req.body;
+  const email = req.locals.email;
+  var query = "select * from user where email=? and password=?";
+  connection.query(query, [email, user.oldPassword], (err, results) => {
+    if(!err) {
+ if(results.length <=0){
+  return res.status(400).json({message: "Incorrect Old Password"});
+ }
+ else if (results[0].password == user.oldPassword){
+  query = "update user set password=? where email=? ";
+  connection.query(query, [user.newPassword, email], (err, results) => {
+    if(!err) {
+return res.status(200).json({message: "Password updated successfully"});
+    }else {
+      return res.status(500).json(err);
+    }
+  })
+ }else {
+  return res.status(400).json({message: "something went wrong: please try again later"});
+ }
+    }else {
+return res.status(500).json(err);
+    }
+  })
+})
+
 module.exports = router;
